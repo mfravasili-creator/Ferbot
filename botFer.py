@@ -1,21 +1,20 @@
 import streamlit as st
 
-# Configuración de la página web (Look "Tech" Negro y Verde)
+# Configuración de la página web (Look Tech)
 st.set_page_config(page_title="AI Chatbot - Fer", page_icon="🤖", layout="centered")
 
 st.title("🤖 Asistente Virtual 2.0")
 st.subheader("Propuesta de Automatización para Fer")
-st.write("Escribile al bot para probar cómo respondería con tus clientes en vivo.")
-
+st.write("Escribile al bot para probar la experiencia de un chat real y fluido.")
 
 # Lógica del Cerebro del Bot en Python
 def responder_cliente(mensaje_recibido):
     mensaje = mensaje_recibido.lower()
-
+    
     if "hola" in mensaje or "buenas" in mensaje or "inicio" in mensaje:
         return (
             "¡Hola! Soy el asistente virtual de Fer. 👋\n\n"
-            "¿En qué te puedo ayudar hoy? Escribí una de estas palabras clave:\n\n"
+            "¿En qué te puedo ayudar hoy? Escribí o seleccioná una opción:\n\n"
             "• **INFO** (Para saber qué hacemos)\n"
             "• **PRECIOS** (Para ver el catálogo básico)\n"
             "• **HORARIOS** (Para saber cuándo atendemos)\n"
@@ -47,13 +46,25 @@ def responder_cliente(mensaje_recibido):
             "Por favor, escribí una de estas palabras clave: **HOLA, INFO, PRECIOS, HORARIOS o HUMANO**."
         )
 
+# --- SISTEMA DE MEMORIA DEL CHAT ---
+if "historial" not in st.session_state:
+    st.session_state.historial = []
 
-# Caja de texto para que el cliente (o Fer) chatee en la web
-cliente_input = st.text_input("Escribí tu mensaje acá abajo y presioná Enter:", placeholder="Ej: Hola")
+# Muestra los mensajes anteriores en la pantalla con globitos estilo WhatsApp
+for mensaje in st.session_state.historial:
+    with st.chat_message(mensaje["rol"]):
+        st.markdown(mensaje["texto"])
 
-# Cuando se escribe algo, el bot responde en la pantalla de la web
-if cliente_input:
-    st.markdown("---")
-    st.markdown(f"**🧑 Cliente:** {cliente_input}")
+# La cajita mágica de entrada que se limpia SOLA al dar Enter
+if cliente_input := st.chat_input("Escribí tu mensaje acá..."):
+    
+    # 1. Mostrar el mensaje del usuario al toque
+    with st.chat_message("user"):
+        st.markdown(cliente_input)
+    st.session_state.historial.append({"rol": "user", "texto": cliente_input})
+    
+    # 2. El bot procesa el mensaje y responde abajo
     respuesta_bot = responder_cliente(cliente_input)
-    st.info(f"**🤖 Bot:** {respuesta_bot}")
+    with st.chat_message("assistant"):
+        st.markdown(respuesta_bot)
+    st.session_state.historial.append({"rol": "assistant", "texto": respuesta_bot})
